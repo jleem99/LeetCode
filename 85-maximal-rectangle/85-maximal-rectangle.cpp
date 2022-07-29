@@ -1,43 +1,69 @@
 #pragma GCC optimize('Os')
+/**
+ *
+ */
 
 class Solution {
-    int checkRectangle(vector<vector<char>>& matrix, int x1, int y1, int w, int h) {
-        const int m = matrix[0].size();
-        const int n = matrix.size();
-
-        for (int y = y1; y < y1 + h; y++) {
-            if (y >= n) return 0;
-            for (int x = x1; x < x1 + w; x++) {
-                if (x >= m || matrix[y][x] == '0') return 0;
-            }
+     int largestHistogram(vector<int>& heights) {
+        const int n = heights.size();
+        stack<int> stk;
+        vector<int> left_index(n);
+        vector<int> right_index(n);
+        
+        for (int i = 0; i < n; i++) {
+            while (!stk.empty() && heights[i] <= heights[stk.top()])
+                stk.pop();
+            if (stk.empty())
+                left_index[i] = -1;
+            else
+                left_index[i] = stk.top();
+            stk.push(i);
         }
-        return 1;
+        for (; !stk.empty(); stk.pop());
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stk.empty() && heights[i] <= heights[stk.top()])
+                stk.pop();
+            if (stk.empty())
+                right_index[i] = n;
+            else
+                right_index[i] = stk.top();
+            stk.push(i);
+        }
+
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            const int size = heights[i] * (right_index[i] - left_index[i] - 1);
+            if (size > res)
+                res = size;
+        }
+
+        return res;
     }
     
 public:
     int maximalRectangle(vector<vector<char>>& matrix) {
         const int m = matrix[0].size();
         const int n = matrix.size();        
-        int rank = 0;
         
-        for (int y1 = 0; y1 < n; y1++) {
-            for (int x1 = 0; x1 < m; x1++) {
-                
-                int w = 1, h = 1;
-                
-                for (int h = 1; h <= n - y1; h++) {
-                    int w = (rank / h) + 1;
-                    // Check starting square if it's filled with 1's
-                    if (!checkRectangle(matrix, x1, y1, w, h)) continue;
-
-                    do {
-                        rank = w * h;
-                        w++;
-                    } while (checkRectangle(matrix, x1 + w - 1, y1, 1, h));
-                }
+        vector<vector<int>> heights_matrix(n, vector<int>(m));
+        for (int y = n - 1; y >= 0; y--) {
+            for (int x = 0; x < m; x++) {
+                if (y == n - 1 || matrix[y][x] == '0')
+                    heights_matrix[y][x] = matrix[y][x] == '0' ? 0 : 1;
+                else
+                    heights_matrix[y][x] = heights_matrix[y + 1][x] + 1;
             }
         }
+    
+        int res = 0;
+        for (int y = 0; y < n; y++) {
+            const int size = largestHistogram(heights_matrix[y]);
+            if (size > res)
+                res = size;
+        }
 
-        return rank;
+        return res;
     }
+    
+    
 };

@@ -1,3 +1,5 @@
+#pragma GCC optimize('Os')
+
 class Solution {
     int checkRectangle(vector<vector<char>>& matrix, int x1, int y1, int w, int h) {
         const int m = matrix[0].size();
